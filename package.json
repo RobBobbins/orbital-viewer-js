@@ -1,0 +1,16 @@
+{
+  "name": "orbital-viewer-js",
+  "version": "1.0.0",
+  "description": "A standalone, mathematically exact volumetric raymarcher for hydrogen atomic orbitals.",
+  "main": "src/OrbitalViewer.js",
+  "module": "src/OrbitalViewer.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "w3bguru",
+  "license": "MIT",
+  "peerDependencies": {
+    "three": "^0.128.0"
+  }
+}

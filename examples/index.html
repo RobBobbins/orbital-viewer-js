@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Orbital Viewer JS - Demo</title>
+  <style>
+    body {
+      margin: 0;
+      background: #111;
+      color: #fff;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    #controls {
+      padding: 10px;
+      background: #222;
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      border-bottom: 1px solid #333;
+    }
+    #viewer-container {
+      flex: 1;
+      position: relative;
+    }
+  </style>
+  <!-- Use ES modules for the browser -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+        "three/examples/jsm/controls/OrbitControls.js": "https://unpkg.com/three@0.128.0/examples/jsm/controls/OrbitControls.js"
+      }
+    }
+  </script>
+</head>
+<body>
+
+  <div id="controls">
+    <strong>orbital-viewer-js</strong>
+    <button onclick="window.viewer.setQuantumNumbers(3, 2, 0)">Load (3, 2, 0)</button>
+    <button onclick="window.viewer.setQuantumNumbers(4, 3, 1)">Load (4, 3, 1)</button>
+    <button onclick="window.viewer.setQuantumNumbers(4, 0, 0)">Load (4, 0, 0)</button>
+    
+    <label style="margin-left:auto">
+      Brightness: 
+      <input type="range" min="0.05" max="4.0" step="0.05" value="0.10" 
+             oninput="window.viewer.setTuning({ brightness: parseFloat(this.value) })">
+    </label>
+  </div>
+
+  <div id="viewer-container"></div>
+
+  <script type="module">
+    import OrbitalViewer from '../src/OrbitalViewer.js';
+
+    const container = document.getElementById('viewer-container');
+    
+    // Initialize the viewer
+    window.viewer = new OrbitalViewer(container, {
+      n: 4, l: 2, m: 0
+    });
+  </script>
+
+</body>
+</html>
