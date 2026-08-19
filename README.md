@@ -6,8 +6,6 @@ A standalone, mathematically exact volumetric raymarcher for hydrogen atomic orb
 
 👉 **[View the Live Interactive Demo](https://robbobbins.github.io/orbital-viewer-js/examples/index.html)**
 
-*(Note: To view the live demo link above, simply enable GitHub Pages for the `main` branch in your repository settings.)*
-
 <br>
 
 **LISTEN TO: [PGNIP.ca](https://pgnip.ca) &mdash; a hilarious Canadian comedy podcast.**
