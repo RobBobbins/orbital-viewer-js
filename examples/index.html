@@ -25,81 +25,108 @@
       color: #555;
       margin-bottom: 2rem;
     }
-    .widget-wrapper {
-      background: #111;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-      display: flex;
-      flex-direction: column;
-      margin-bottom: 3rem;
+    
+    /* -------------------------------------------------------------
+       W3bpedia-style Showcase Container
+    ------------------------------------------------------------- */
+    .orbital-showcase {
+      border: 1px solid #a2a9b1;
+      background-color: #f8f9fa;
+      padding: 10px;
+      margin-bottom: 2rem;
+      border-radius: 4px;
     }
-    #controls {
-      padding: 12px 20px;
-      background: #222;
-      display: flex;
-      gap: 15px;
-      align-items: center;
-      border-bottom: 1px solid #333;
-      color: #fff;
-    }
-    #viewer-container {
+    
+    .orbital-viewer-wrapper {
       position: relative;
       width: 100%;
       height: 600px;
-    }
-    .main-title {
-      position: absolute;
-      top: 15px;
-      left: 15px;
-      background: rgba(0,0,0,0.6);
-      color: #fff;
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 20px;
-      font-family: monospace;
-      pointer-events: none;
-      z-index: 10;
-    }
-    .gallery {
-      position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      gap: 8px;
-      z-index: 10;
-      background: rgba(0,0,0,0.6);
-      padding: 10px;
-      border-radius: 12px;
-      overflow-x: auto;
-      max-width: 90%;
-    }
-    /* Hide scrollbar for cleaner look */
-    .gallery::-webkit-scrollbar { display: none; }
-    .gallery { -ms-overflow-style: none; scrollbar-width: none; }
-
-    .gallery-thumb {
-      cursor: pointer;
-      border: 2px solid transparent;
       background: #000;
-      position: relative;
-      transition: transform 0.15s ease;
-      border-radius: 4px;
+      border: 1px solid #a2a9b1;
+      margin-bottom: 10px;
       overflow: hidden;
-      flex-shrink: 0;
     }
-    .gallery-thumb:hover { transform: scale(1.05); }
-    .gallery-thumb.active { border-color: #ea580c; }
-    .gallery-thumb canvas { display: block; }
-    .gallery-label {
+    
+    #three-title {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      color: #fff;
+      font-size: 18px;
+      font-family: serif;
+      z-index: 10;
+      pointer-events: none;
+      text-shadow: 1px 1px 2px #000;
+    }
+    
+    /* Settings panel */
+    #settings-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 11;
+      background: rgba(0, 0, 0, 0.6);
+      color: #fff;
+      border: 1px solid #444;
+      border-radius: 4px;
+      padding: 6px 10px;
+      cursor: pointer;
+    }
+    #settings-panel {
+      position: absolute;
+      top: 45px;
+      right: 10px;
+      z-index: 11;
+      background: rgba(0, 0, 0, 0.8);
+      color: #fff;
+      padding: 15px;
+      border-radius: 4px;
+      border: 1px solid #444;
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      font-size: 13px;
+    }
+    #settings-panel label {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    
+    /* Gallery placed UNDER the viewer */
+    #orbital-gallery {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      justify-content: center;
+      background: #eaecf0;
+      padding: 10px;
+      border: 1px solid #a2a9b1;
+    }
+    
+    .gallery-thumb {
+      background: #000;
+      border: 2px solid transparent;
+      cursor: pointer;
+      position: relative;
+    }
+    .gallery-thumb:hover {
+      border-color: #0645ad;
+    }
+    .gallery-thumb.active {
+      border-color: #ea580c;
+    }
+    .gallery-thumb canvas {
+      display: block;
+    }
+    .gallery-thumb-label {
       position: absolute;
       bottom: 0; right: 0;
-      font-size: 11px;
+      font-size: 10px;
       color: #fff;
-      padding: 2px 5px;
-      background: rgba(0,0,0,0.7);
-      font-family: monospace;
+      background: rgba(0,0,0,0.6);
+      padding: 1px 3px;
+      font-family: sans-serif;
     }
   </style>
   <script type="importmap">
@@ -117,44 +144,68 @@
     <h1>orbital-viewer-js</h1>
     <p>
       A standalone, mathematically exact volumetric raymarcher for hydrogen atomic orbitals built on top of Three.js. 
-      Most orbital visualizations on the web rely on scatter plots or particle systems that loosely approximate probability density. 
-      This library uses a custom GLSL raymarching shader to analytically evaluate the real spherical harmonics and generalized Laguerre polynomials directly on the GPU. 
-      It accumulates the |&psi;|² probability density through the volume and applies ACES Filmic Tone Mapping to gracefully handle highlights.
     </p>
 
-    <div class="widget-wrapper">
-      <div id="controls">
-        <strong>Live Demo</strong>
-        <label style="margin-left:auto; display:flex; align-items:center; gap:8px;">
-          Core Brightness: 
-          <input type="range" min="0.05" max="4.0" step="0.05" value="0.10" 
-                 oninput="window.viewer.setTuning({ brightness: parseFloat(this.value) })">
-        </label>
+    <!-- Embedded Widget -->
+    <div class="orbital-showcase">
+      <div class="orbital-viewer-wrapper" id="three-container">
+        <div id="three-title">&psi;(4, 2, 0)</div>
+        <button id="settings-btn">&#9881; Tuning</button>
+        <div id="settings-panel">
+          <label>Brightness <input type="range" id="b-slider" min="0.05" max="4.0" step="0.05" value="0.10"></label>
+          <label>Shadow Boost <input type="range" id="s-slider" min="0.1" max="1.5" step="0.05" value="0.45"></label>
+          <label>Core Exposure <input type="range" id="e-slider" min="0.1" max="3.0" step="0.1" value="0.60"></label>
+          <label>Color Curve <input type="range" id="c-slider" min="0.3" max="2.0" step="0.05" value="0.70"></label>
+        </div>
       </div>
-
-      <div id="viewer-container">
-        <div class="main-title" id="main-title">&psi;(4, 2, 0)</div>
-        <div class="gallery" id="gallery"></div>
-      </div>
+      
+      <!-- Gallery placed UNDER the viewer, inside normal page flow -->
+      <div id="orbital-gallery"></div>
     </div>
     
     <p>
       The interactive widget above is powered entirely by the <code>OrbitalViewer</code> class. 
-      The bottom gallery is generated automatically by calling the static helper method 
-      <code>OrbitalViewer.generateThumbnail(n, l, m)</code> to render mathematically accurate 2D canvas slices on the fly.
+      The gallery below is generated automatically by calling the static helper method 
+      <code>OrbitalViewer.generateThumbnail(n, l, m)</code>.
     </p>
   </div>
 
   <script type="module">
     import OrbitalViewer from '../src/OrbitalViewer.js';
 
-    const container = document.getElementById('viewer-container');
-    const titleEl = document.getElementById('main-title');
-    const galleryEl = document.getElementById('gallery');
+    const container = document.getElementById('three-container');
+    const titleEl = document.getElementById('three-title');
+    const galleryEl = document.getElementById('orbital-gallery');
     
-    // Initialize the viewer
+    // Initialize the viewer with default (4, 2, 0)
     window.viewer = new OrbitalViewer(container, { n: 4, l: 2, m: 0 });
 
+    // Settings Toggle
+    const btn = document.getElementById('settings-btn');
+    const panel = document.getElementById('settings-panel');
+    btn.addEventListener('click', () => {
+      panel.style.display = panel.style.display === 'flex' ? 'none' : 'flex';
+    });
+
+    // Sliders
+    const bSlider = document.getElementById('b-slider');
+    const sSlider = document.getElementById('s-slider');
+    const eSlider = document.getElementById('e-slider');
+    const cSlider = document.getElementById('c-slider');
+    function updateTuning() {
+      window.viewer.setTuning({
+        brightness: parseFloat(bSlider.value),
+        shadowBoost: parseFloat(sSlider.value),
+        coreExposure: parseFloat(eSlider.value),
+        colorCurve: parseFloat(cSlider.value)
+      });
+    }
+    bSlider.addEventListener('input', updateTuning);
+    sSlider.addEventListener('input', updateTuning);
+    eSlider.addEventListener('input', updateTuning);
+    cSlider.addEventListener('input', updateTuning);
+
+    // Gallery
     const orbitals = [
       {n:2, l:0, m:0}, {n:3, l:0, m:0}, {n:4, l:0, m:0},
       {n:2, l:1, m:0}, {n:3, l:1, m:0}, {n:4, l:1, m:0},
@@ -167,7 +218,6 @@
 
     let currentIdx = 10; // (4, 2, 0)
 
-    // Build the gallery using the static helper method
     orbitals.forEach((orb, idx) => {
       const thumbCanvas = OrbitalViewer.generateThumbnail(orb.n, orb.l, orb.m, 60);
       
@@ -178,7 +228,7 @@
       wrapper.appendChild(thumbCanvas);
       
       const label = document.createElement('div');
-      label.className = 'gallery-label';
+      label.className = 'gallery-thumb-label';
       label.textContent = `(${orb.n},${orb.l},${orb.m})`;
       wrapper.appendChild(label);
       
@@ -186,7 +236,6 @@
         document.querySelectorAll('.gallery-thumb').forEach(el => el.classList.remove('active'));
         wrapper.classList.add('active');
         
-        // Update 3D Viewer
         window.viewer.setQuantumNumbers(orb.n, orb.l, orb.m);
         titleEl.innerHTML = `&psi;(${orb.n}, ${orb.l}, ${orb.m})`;
       });
