@@ -12,5 +12,8 @@
   "license": "MIT",
   "peerDependencies": {
     "three": "^0.128.0"
+  },
+  "dependencies": {
+    "puppeteer": "^25.8.0"
   }
 }

@@ -6,33 +6,58 @@
   <style>
     body {
       margin: 0;
+      background: #fafafa;
+      color: #333;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      padding: 20px;
+    }
+    .content {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+    p {
+      font-size: 1.1rem;
+      color: #555;
+      margin-bottom: 2rem;
+    }
+    .widget-wrapper {
       background: #111;
-      color: #fff;
-      font-family: sans-serif;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
       display: flex;
       flex-direction: column;
-      height: 100vh;
+      margin-bottom: 3rem;
     }
     #controls {
-      padding: 10px;
+      padding: 12px 20px;
       background: #222;
       display: flex;
       gap: 15px;
       align-items: center;
       border-bottom: 1px solid #333;
+      color: #fff;
     }
     #viewer-container {
-      flex: 1;
       position: relative;
+      width: 100%;
+      height: 600px;
     }
     .main-title {
       position: absolute;
-      top: 10px;
-      left: 10px;
+      top: 15px;
+      left: 15px;
       background: rgba(0,0,0,0.6);
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 18px;
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 20px;
+      font-family: monospace;
       pointer-events: none;
       z-index: 10;
     }
@@ -42,20 +67,27 @@
       left: 50%;
       transform: translateX(-50%);
       display: flex;
-      gap: 5px;
+      gap: 8px;
       z-index: 10;
-      background: rgba(0,0,0,0.5);
-      padding: 8px;
-      border-radius: 8px;
+      background: rgba(0,0,0,0.6);
+      padding: 10px;
+      border-radius: 12px;
       overflow-x: auto;
-      max-width: 90vw;
+      max-width: 90%;
     }
+    /* Hide scrollbar for cleaner look */
+    .gallery::-webkit-scrollbar { display: none; }
+    .gallery { -ms-overflow-style: none; scrollbar-width: none; }
+
     .gallery-thumb {
       cursor: pointer;
       border: 2px solid transparent;
       background: #000;
       position: relative;
       transition: transform 0.15s ease;
+      border-radius: 4px;
+      overflow: hidden;
+      flex-shrink: 0;
     }
     .gallery-thumb:hover { transform: scale(1.05); }
     .gallery-thumb.active { border-color: #ea580c; }
@@ -63,9 +95,11 @@
     .gallery-label {
       position: absolute;
       bottom: 0; right: 0;
-      font-size: 10px;
-      padding: 1px 4px;
-      background: rgba(0,0,0,0.6);
+      font-size: 11px;
+      color: #fff;
+      padding: 2px 5px;
+      background: rgba(0,0,0,0.7);
+      font-family: monospace;
     }
   </style>
   <script type="importmap">
@@ -79,18 +113,36 @@
 </head>
 <body>
 
-  <div id="controls">
-    <strong>orbital-viewer-js</strong>
-    <label style="margin-left:auto">
-      Brightness: 
-      <input type="range" min="0.05" max="4.0" step="0.05" value="0.10" 
-             oninput="window.viewer.setTuning({ brightness: parseFloat(this.value) })">
-    </label>
-  </div>
+  <div class="content">
+    <h1>orbital-viewer-js</h1>
+    <p>
+      A standalone, mathematically exact volumetric raymarcher for hydrogen atomic orbitals built on top of Three.js. 
+      Most orbital visualizations on the web rely on scatter plots or particle systems that loosely approximate probability density. 
+      This library uses a custom GLSL raymarching shader to analytically evaluate the real spherical harmonics and generalized Laguerre polynomials directly on the GPU. 
+      It accumulates the |&psi;|² probability density through the volume and applies ACES Filmic Tone Mapping to gracefully handle highlights.
+    </p>
 
-  <div id="viewer-container">
-    <div class="main-title" id="main-title">?(4, 2, 0)</div>
-    <div class="gallery" id="gallery"></div>
+    <div class="widget-wrapper">
+      <div id="controls">
+        <strong>Live Demo</strong>
+        <label style="margin-left:auto; display:flex; align-items:center; gap:8px;">
+          Core Brightness: 
+          <input type="range" min="0.05" max="4.0" step="0.05" value="0.10" 
+                 oninput="window.viewer.setTuning({ brightness: parseFloat(this.value) })">
+        </label>
+      </div>
+
+      <div id="viewer-container">
+        <div class="main-title" id="main-title">&psi;(4, 2, 0)</div>
+        <div class="gallery" id="gallery"></div>
+      </div>
+    </div>
+    
+    <p>
+      The interactive widget above is powered entirely by the <code>OrbitalViewer</code> class. 
+      The bottom gallery is generated automatically by calling the static helper method 
+      <code>OrbitalViewer.generateThumbnail(n, l, m)</code> to render mathematically accurate 2D canvas slices on the fly.
+    </p>
   </div>
 
   <script type="module">
@@ -115,7 +167,7 @@
 
     let currentIdx = 10; // (4, 2, 0)
 
-    // Build the gallery using the static helper method!
+    // Build the gallery using the static helper method
     orbitals.forEach((orb, idx) => {
       const thumbCanvas = OrbitalViewer.generateThumbnail(orb.n, orb.l, orb.m, 60);
       
@@ -136,7 +188,6 @@
         
         // Update 3D Viewer
         window.viewer.setQuantumNumbers(orb.n, orb.l, orb.m);
-        // We use HTML entities for psi directly in JS
         titleEl.innerHTML = `&psi;(${orb.n}, ${orb.l}, ${orb.m})`;
       });
       
