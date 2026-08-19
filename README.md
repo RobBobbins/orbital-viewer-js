@@ -1,5 +1,7 @@
 ﻿# orbital-viewer-js
 
+![Atomic Orbitals](orbitals.png)
+
 A standalone, mathematically exact volumetric raymarcher for hydrogen atomic orbitals built on top of Three.js.
 
 👉 **[View the Live Interactive Demo](https://robbobbins.github.io/orbital-viewer-js/examples/index.html)**
@@ -77,3 +79,4 @@ viewer.setTuning({
 ## License
 
 MIT
+
