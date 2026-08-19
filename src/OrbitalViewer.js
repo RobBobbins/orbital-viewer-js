@@ -248,7 +248,8 @@ export default class OrbitalViewer {
 
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
-    this.renderer.setPixelRatio(window.devicePixelRatio);
+    var isMobile = window.matchMedia('(max-width: 768px)').matches;
+    this.renderer.setPixelRatio(isMobile ? 1 : window.devicePixelRatio);
     this.container.appendChild(this.renderer.domElement);
 
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
@@ -292,8 +293,21 @@ export default class OrbitalViewer {
     this.setQuantumNumbers(this.options.n, this.options.l, this.options.m);
 
     this._animationId = null;
+    this._isVisible = false;
     this._animate = this._animate.bind(this);
-    this._animate();
+
+    this._observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          this._isVisible = true;
+          this._animationId = requestAnimationFrame(this._animate);
+        } else {
+          this._isVisible = false;
+          if (this._animationId) { cancelAnimationFrame(this._animationId); this._animationId = null; }
+        }
+      });
+    }, { threshold: 0 });
+    this._observer.observe(this.container);
   }
 
   setTuning(tuning) {
@@ -326,7 +340,7 @@ export default class OrbitalViewer {
   }
 
   _animate() {
-    this._animationId = requestAnimationFrame(this._animate);
+    if (this._isVisible) this._animationId = requestAnimationFrame(this._animate);
     this.controls.update();
     this.uniforms.u_inverseModelMatrix.value.copy(this.volumeMesh.matrixWorld).invert();
     this.renderer.render(this.scene, this.camera);
@@ -334,6 +348,7 @@ export default class OrbitalViewer {
 
   dispose() {
     cancelAnimationFrame(this._animationId);
+    if (this._observer) { this._observer.disconnect(); this._observer = null; }
     window.removeEventListener('resize', this._onResize);
     if (this.container && this.renderer.domElement) {
       this.container.removeChild(this.renderer.domElement);
