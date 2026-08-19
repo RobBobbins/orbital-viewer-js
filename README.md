@@ -2,9 +2,15 @@
 
 A standalone, mathematically exact volumetric raymarcher for hydrogen atomic orbitals built on top of Three.js.
 
+?? **[View the Live Interactive Demo](https://robbobbins.github.io/orbital-viewer-js/examples/index.html)**
+
+*(Note: To view the live demo link above, simply enable GitHub Pages for the `main` branch in your repository settings.)*
+
 Most orbital visualizations on the web rely on scatter plots or particle systems that loosely approximate probability density. This library uses a custom GLSL raymarching shader to analytically evaluate the real spherical harmonics and generalized Laguerre polynomials directly on the GPU. It accumulates the $|\psi|^2$ probability density through the volume and applies ACES Filmic Tone Mapping to gracefully handle highlights.
 
 The result is a perfectly smooth, physically accurate, 60-fps glowing volumetric cloud of an atom.
+
+An interactive example implementation—complete with a dynamic 2D thumbnail gallery—is included in the [`examples/index.html`](examples/index.html) file of this repository.
 
 ## Installation
 
@@ -60,6 +66,7 @@ viewer.setTuning({
 *   **`setQuantumNumbers(n, l, m)`**: Loads a new orbital mathematically without recreating geometry. The engine will automatically sample the new orbital to normalize its true amplitude.
 *   **`setTuning(options)`**: Update rendering parameters (`brightness`, `shadowBoost`, `coreExposure`, `colorCurve`).
 *   **`dispose()`**: Cleans up the Three.js renderer and DOM nodes to prevent memory leaks in single-page applications.
+*   **`OrbitalViewer.generateThumbnail(n, l, m)`**: Static helper method that returns a dynamically drawn 2D `<canvas>` element representing the orbital slice (used to generate thumbnail galleries).
 
 ## License
 
