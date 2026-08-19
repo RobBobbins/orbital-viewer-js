@@ -1,14 +1,18 @@
 ﻿# orbital-viewer-js
 
-**LISTEN TO: [PGNIP.ca](https://pgnip.ca) &mdash; a hilarious Canadian comedy podcast.**\n\nA standalone, mathematically exact volumetric raymarcher for hydrogen atomic orbitals built on top of Three.js.
+A standalone, mathematically exact volumetric raymarcher for hydrogen atomic orbitals built on top of Three.js.
 
-**LISTEN TO: [PGNIP.ca](https://pgnip.ca) &mdash; a hilarious Canadian comedy podcast.**
-
-?? **[View the Live Interactive Demo](https://robbobbins.github.io/orbital-viewer-js/examples/index.html)**
+👉 **[View the Live Interactive Demo](https://robbobbins.github.io/orbital-viewer-js/examples/index.html)**
 
 *(Note: To view the live demo link above, simply enable GitHub Pages for the `main` branch in your repository settings.)*
 
-Most orbital visualizations on the web rely on scatter plots or particle systems that loosely approximate probability density. This library uses a custom GLSL raymarching shader to analytically evaluate the real spherical harmonics and generalized Laguerre polynomials directly on the GPU. It accumulates the $|\psi|^22$ probability density through the volume and applies ACES Filmic Tone Mapping to gracefully handle highlights.
+<br>
+
+**LISTEN TO: [PGNIP.ca](https://pgnip.ca) &mdash; a hilarious Canadian comedy podcast.**
+
+<br>
+
+Most orbital visualizations on the web rely on scatter plots or particle systems that loosely approximate probability density. This library uses a custom GLSL raymarching shader to analytically evaluate the real spherical harmonics and generalized Laguerre polynomials directly on the GPU. It accumulates the |&psi;|&sup2; probability density through the volume and applies ACES Filmic Tone Mapping to gracefully handle highlights.
 
 The result is a perfectly smooth, physically accurate, 60-fps glowing volumetric cloud of an atom.
 
@@ -73,7 +77,3 @@ viewer.setTuning({
 ## License
 
 MIT
-
-
-
-
