@@ -76,7 +76,13 @@ viewer.setTuning({
 *   **`dispose()`**: Cleans up the Three.js renderer and DOM nodes to prevent memory leaks in single-page applications.
 *   **`OrbitalViewer.generateThumbnail(n, l, m)`**: Static helper method that returns a dynamically drawn 2D `<canvas>` element representing the orbital slice (used to generate thumbnail galleries).
 
+## Contributors
+
+* **Claude**
+* **Gemini**
+
 ## License
 
 MIT
+
 
