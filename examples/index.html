@@ -95,10 +95,7 @@
     
     /* Gallery placed UNDER the viewer */
     #orbital-gallery {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 5px;
-      justify-content: center;
+      display: grid; grid-template-columns: repeat(9, 1fr); gap: 5px;
       background: #eaecf0;
       padding: 10px;
       border: 1px solid #a2a9b1;
@@ -116,9 +113,7 @@
     .gallery-thumb.active {
       border-color: #ea580c;
     }
-    .gallery-thumb canvas {
-      display: block;
-    }
+    .gallery-thumb canvas { display: block; width: 100%; height: auto; aspect-ratio: 1/1; }
     .gallery-thumb-label {
       position: absolute;
       bottom: 0; right: 0;
@@ -246,6 +241,7 @@
 
 </body>
 </html>
+
 
 
 
