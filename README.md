@@ -1,4 +1,4 @@
-# orbital-viewer-js
+ï»¿# orbital-viewer-js
 
 A standalone, mathematically exact volumetric raymarcher for hydrogen atomic orbitals built on top of Three.js.
 
@@ -6,11 +6,11 @@ A standalone, mathematically exact volumetric raymarcher for hydrogen atomic orb
 
 *(Note: To view the live demo link above, simply enable GitHub Pages for the `main` branch in your repository settings.)*
 
-Most orbital visualizations on the web rely on scatter plots or particle systems that loosely approximate probability density. This library uses a custom GLSL raymarching shader to analytically evaluate the real spherical harmonics and generalized Laguerre polynomials directly on the GPU. It accumulates the $|\psi|^2$ probability density through the volume and applies ACES Filmic Tone Mapping to gracefully handle highlights.
+Most orbital visualizations on the web rely on scatter plots or particle systems that loosely approximate probability density. This library uses a custom GLSL raymarching shader to analytically evaluate the real spherical harmonics and generalized Laguerre polynomials directly on the GPU. It accumulates the $|\psi|^22$ probability density through the volume and applies ACES Filmic Tone Mapping to gracefully handle highlights.
 
 The result is a perfectly smooth, physically accurate, 60-fps glowing volumetric cloud of an atom.
 
-An interactive example implementation—complete with a dynamic 2D thumbnail gallery—is included in the [`examples/index.html`](examples/index.html) file of this repository.
+An interactive example implementationâ€”complete with a dynamic 2D thumbnail galleryâ€”is included in the [`examples/index.html`](examples/index.html) file of this repository.
 
 ## Installation
 
@@ -71,3 +71,4 @@ viewer.setTuning({
 ## License
 
 MIT
+
