@@ -53,7 +53,6 @@ function psi(n, l, m, x, y, z) {
   return R * Y;
 }
 
-// Analytically samples the orbital to find its true peak value so we can "auto-expose" it perfectly.
 function findMaxAmp(n, l, m, boxSize) {
   let maxA = 0;
   const steps = 40;
@@ -76,7 +75,20 @@ function findMaxAmp(n, l, m, boxSize) {
   return maxA === 0 ? 1 : maxA;
 }
 
-// --- Shader Definitions ---
+function getDensityColor(val, maxVal, colorCurve = 0.70) {
+  const norm = Math.min(1.0, Math.abs(val) / maxVal);
+  const t = Math.pow(norm, colorCurve);
+  let r = 0, g = 0, b = 0;
+  if (t < 0.35) {
+    const f = t / 0.35; r = 50 * f; g = 0; b = 90 * f;
+  } else if (t < 0.75) {
+    const f = (t - 0.35) / 0.40; r = 50 + 205 * f; g = 140 * f; b = 90 - 90 * f;
+  } else {
+    const f = (t - 0.75) / 0.25; r = 255; g = 140 + 115 * f; b = 255 * f;
+  }
+  return { r: Math.floor(r), g: Math.floor(g), b: Math.floor(b) };
+}
+
 const vertexShader = `
   varying vec3 vOrigin;
   varying vec3 vDirection;
@@ -161,23 +173,16 @@ const fragmentShader = `
       return vec3(r, g, b) / 255.0;
   }
 
-  // ACES Filmic Tone Mapping to gracefully roll off highlights without blowing out to pure white clipping
   vec3 ACESFilm(vec3 x) {
-      float a = 2.51;
-      float b = 0.03;
-      float c = 2.43;
-      float d = 0.59;
-      float e = 0.14;
+      float a = 2.51; float b = 0.03; float c = 2.43; float d = 0.59; float e = 0.14;
       return clamp((x*(a*x+b))/(x*(c*x+d)+e), 0.0, 1.0);
   }
 
   void main() {
-      // Transform ray to local object space
       vec4 localOrigin = u_inverseModelMatrix * vec4(vOrigin, 1.0);
       vec3 rayDir = normalize(vDirection - localOrigin.xyz);
       vec3 p = localOrigin.xyz;
       
-      // Ray-sphere intersection bounds (Local sphere has radius 30.0)
       float radius = 30.0;
       float b_val = dot(p, rayDir);
       float c_val = dot(p, p) - radius * radius;
@@ -190,7 +195,6 @@ const fragmentShader = `
       t0 = max(t0, 0.0);
       if (t1 < 0.0) discard;
       
-      // March through the volume
       int steps = 70;
       float stepSize = (t1 - t0) / float(steps);
       p += rayDir * t0;
@@ -201,18 +205,14 @@ const fragmentShader = `
       for (int i = 0; i < 70; i++) {
           float r_local = length(p);
           if (r_local > 0.001 && r_local < radius) {
-              // Map local coordinate (0 -> 30) to physical Bohr radii (0 -> boxSize/2)
               float r_phys = r_local * (u_boxSize / 60.0);
-              
               float R = radialR(u_n, u_l, r_phys);
-              // Spherical harmonics only care about direction, so local p is fine
               float Y = realSphericalHarmonic(u_l, u_m, p.x/r_local, p.y/r_local, p.z/r_local);
               float val = R * Y;
               
               float density = (val * val) / (u_maxAmp * u_maxAmp);
               if (density > 0.0005) {
                   vec3 col = getDensityColor(val, maxD);
-                  // Additive accumulation: fractional power boosts deep shadows
                   float alpha = pow(density, u_shadowBoost) * stepSize * 1.5;
                   accum.rgb += col * alpha;
                   accum.a += alpha;
@@ -221,19 +221,12 @@ const fragmentShader = `
           p += rayDir * stepSize;
       }
       
-      // Apply exposure multiplier and ACES tone mapping
       vec3 mappedColor = ACESFilm(accum.rgb * u_brightness);
-      
       gl_FragColor = vec4(mappedColor, 1.0);
   }
 `;
 
 export default class OrbitalViewer {
-  /**
-   * Initializes the orbital raymarcher.
-   * @param {HTMLElement} containerElement - The DOM element to append the viewer to.
-   * @param {Object} options - Configuration options.
-   */
   constructor(containerElement, options = {}) {
     this.container = containerElement;
     this.options = {
@@ -261,7 +254,7 @@ export default class OrbitalViewer {
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableDamping = true;
     this.controls.dampingFactor = 0.05;
-    this.controls.enableZoom = false; // Zoom breaks raymarch bounding bounds
+    this.controls.enableZoom = false; 
     this.controls.enablePan = false;
     this.controls.autoRotate = true;
     this.controls.autoRotateSpeed = this.options.autoRotateSpeed;
@@ -303,10 +296,6 @@ export default class OrbitalViewer {
     this._animate();
   }
 
-  /**
-   * Updates the rendering parameters.
-   * @param {Object} tuning - { brightness, shadowBoost, coreExposure, colorCurve }
-   */
   setTuning(tuning) {
     if (tuning.brightness !== undefined) this.uniforms.u_brightness.value = tuning.brightness;
     if (tuning.shadowBoost !== undefined) this.uniforms.u_shadowBoost.value = tuning.shadowBoost;
@@ -314,12 +303,6 @@ export default class OrbitalViewer {
     if (tuning.colorCurve !== undefined) this.uniforms.u_colorCurve.value = tuning.colorCurve;
   }
 
-  /**
-   * Loads a new hydrogen orbital.
-   * @param {number} n - Principal quantum number
-   * @param {number} l - Azimuthal quantum number
-   * @param {number} m - Magnetic quantum number
-   */
   setQuantumNumbers(n, l, m) {
     this.options.n = n;
     this.options.l = l;
@@ -349,9 +332,6 @@ export default class OrbitalViewer {
     this.renderer.render(this.scene, this.camera);
   }
 
-  /**
-   * Cleans up resources.
-   */
   dispose() {
     cancelAnimationFrame(this._animationId);
     window.removeEventListener('resize', this._onResize);
@@ -359,5 +339,39 @@ export default class OrbitalViewer {
       this.container.removeChild(this.renderer.domElement);
     }
     this.renderer.dispose();
+  }
+
+  /**
+   * Generates a 2D probability density slice thumbnail for an orbital.
+   * Very useful for creating interactive HTML galleries.
+   */
+  static generateThumbnail(n, l, m, resolution = 60) {
+    const boxSize = Math.max(14, n * n * 2.8);
+    const maxAmp = findMaxAmp(n, l, m, boxSize);
+    const colorMax = maxAmp * 0.85;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = resolution;
+    canvas.height = resolution;
+    const ctx = canvas.getContext('2d');
+    const imgData = ctx.createImageData(resolution, resolution);
+    
+    let pIdx = 0;
+    for (let py = 0; py < resolution; py++) {
+      const z = ((resolution / 2 - py) / (resolution / 2)) * (boxSize / 2);
+      for (let px = 0; px < resolution; px++) {
+        const x = ((px - resolution / 2) / (resolution / 2)) * (boxSize / 2);
+        
+        const val = psi(n, l, m, x, 0, z); // XZ slice
+        const color = getDensityColor(val, colorMax);
+        
+        imgData.data[pIdx++] = color.r;
+        imgData.data[pIdx++] = color.g;
+        imgData.data[pIdx++] = color.b;
+        imgData.data[pIdx++] = 255;
+      }
+    }
+    ctx.putImageData(imgData, 0, 0);
+    return canvas;
   }
 }

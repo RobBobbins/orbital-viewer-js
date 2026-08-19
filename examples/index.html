@@ -25,8 +25,49 @@
       flex: 1;
       position: relative;
     }
+    .main-title {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(0,0,0,0.6);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 18px;
+      pointer-events: none;
+      z-index: 10;
+    }
+    .gallery {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 5px;
+      z-index: 10;
+      background: rgba(0,0,0,0.5);
+      padding: 8px;
+      border-radius: 8px;
+      overflow-x: auto;
+      max-width: 90vw;
+    }
+    .gallery-thumb {
+      cursor: pointer;
+      border: 2px solid transparent;
+      background: #000;
+      position: relative;
+      transition: transform 0.15s ease;
+    }
+    .gallery-thumb:hover { transform: scale(1.05); }
+    .gallery-thumb.active { border-color: #ea580c; }
+    .gallery-thumb canvas { display: block; }
+    .gallery-label {
+      position: absolute;
+      bottom: 0; right: 0;
+      font-size: 10px;
+      padding: 1px 4px;
+      background: rgba(0,0,0,0.6);
+    }
   </style>
-  <!-- Use ES modules for the browser -->
   <script type="importmap">
     {
       "imports": {
@@ -40,10 +81,6 @@
 
   <div id="controls">
     <strong>orbital-viewer-js</strong>
-    <button onclick="window.viewer.setQuantumNumbers(3, 2, 0)">Load (3, 2, 0)</button>
-    <button onclick="window.viewer.setQuantumNumbers(4, 3, 1)">Load (4, 3, 1)</button>
-    <button onclick="window.viewer.setQuantumNumbers(4, 0, 0)">Load (4, 0, 0)</button>
-    
     <label style="margin-left:auto">
       Brightness: 
       <input type="range" min="0.05" max="4.0" step="0.05" value="0.10" 
@@ -51,16 +88,59 @@
     </label>
   </div>
 
-  <div id="viewer-container"></div>
+  <div id="viewer-container">
+    <div class="main-title" id="main-title">?(4, 2, 0)</div>
+    <div class="gallery" id="gallery"></div>
+  </div>
 
   <script type="module">
     import OrbitalViewer from '../src/OrbitalViewer.js';
 
     const container = document.getElementById('viewer-container');
+    const titleEl = document.getElementById('main-title');
+    const galleryEl = document.getElementById('gallery');
     
     // Initialize the viewer
-    window.viewer = new OrbitalViewer(container, {
-      n: 4, l: 2, m: 0
+    window.viewer = new OrbitalViewer(container, { n: 4, l: 2, m: 0 });
+
+    const orbitals = [
+      {n:2, l:0, m:0}, {n:3, l:0, m:0}, {n:4, l:0, m:0},
+      {n:2, l:1, m:0}, {n:3, l:1, m:0}, {n:4, l:1, m:0},
+      {n:2, l:1, m:1}, {n:3, l:1, m:1}, {n:4, l:1, m:1},
+      {n:3, l:2, m:0}, {n:4, l:2, m:0},
+      {n:3, l:2, m:1}, {n:4, l:2, m:1},
+      {n:3, l:2, m:2}, {n:4, l:2, m:2},
+      {n:4, l:3, m:0}, {n:4, l:3, m:1}, {n:4, l:3, m:3}
+    ];
+
+    let currentIdx = 10; // (4, 2, 0)
+
+    // Build the gallery using the static helper method!
+    orbitals.forEach((orb, idx) => {
+      const thumbCanvas = OrbitalViewer.generateThumbnail(orb.n, orb.l, orb.m, 60);
+      
+      const wrapper = document.createElement('div');
+      wrapper.className = 'gallery-thumb';
+      if (idx === currentIdx) wrapper.classList.add('active');
+      
+      wrapper.appendChild(thumbCanvas);
+      
+      const label = document.createElement('div');
+      label.className = 'gallery-label';
+      label.textContent = `(${orb.n},${orb.l},${orb.m})`;
+      wrapper.appendChild(label);
+      
+      wrapper.addEventListener('click', () => {
+        document.querySelectorAll('.gallery-thumb').forEach(el => el.classList.remove('active'));
+        wrapper.classList.add('active');
+        
+        // Update 3D Viewer
+        window.viewer.setQuantumNumbers(orb.n, orb.l, orb.m);
+        // We use HTML entities for psi directly in JS
+        titleEl.innerHTML = `&psi;(${orb.n}, ${orb.l}, ${orb.m})`;
+      });
+      
+      galleryEl.appendChild(wrapper);
     });
   </script>
 
