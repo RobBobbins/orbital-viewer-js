@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Orbital Viewer JS - Demo</title>
+  <title>orbital-viewer-js</title>
   <style>
     body {
       margin: 0;
@@ -16,10 +16,29 @@
       max-width: 900px;
       margin: 0 auto;
     }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+      border-bottom: 2px solid #eaecf0;
+      padding-bottom: 10px;
+    }
     h1 {
       font-size: 2.5rem;
-      margin-bottom: 0.5rem;
+      margin: 0;
     }
+    .github-link {
+      display: inline-block;
+      background: #24292e;
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 14px;
+    }
+    .github-link:hover { background: #000; }
     p {
       font-size: 1.1rem;
       color: #555;
@@ -59,7 +78,6 @@
       text-shadow: 1px 1px 2px #000;
     }
     
-    /* Settings panel */
     #settings-btn {
       position: absolute;
       top: 10px;
@@ -93,9 +111,10 @@
       gap: 5px;
     }
     
-    /* Gallery placed UNDER the viewer */
     #orbital-gallery {
-      display: grid; grid-template-columns: repeat(9, 1fr); gap: 5px;
+      display: grid; 
+      grid-template-columns: repeat(9, 1fr); 
+      gap: 5px;
       background: #eaecf0;
       padding: 10px;
       border: 1px solid #a2a9b1;
@@ -113,7 +132,12 @@
     .gallery-thumb.active {
       border-color: #ea580c;
     }
-    .gallery-thumb canvas { display: block; width: 100%; height: auto; aspect-ratio: 1/1; }
+    .gallery-thumb canvas { 
+      display: block; 
+      width: 100%; 
+      height: auto; 
+      aspect-ratio: 1/1; 
+    }
     .gallery-thumb-label {
       position: absolute;
       bottom: 0; right: 0;
@@ -122,6 +146,45 @@
       background: rgba(0,0,0,0.6);
       padding: 1px 3px;
       font-family: sans-serif;
+    }
+
+    /* -------------------------------------------------------------
+       Documentation Styles
+    ------------------------------------------------------------- */
+    h2 {
+      margin-top: 2rem;
+      border-bottom: 1px solid #eaecf0;
+      padding-bottom: 5px;
+    }
+    pre {
+      background: #f4f4f4;
+      padding: 15px;
+      border-radius: 6px;
+      overflow-x: auto;
+      border: 1px solid #ddd;
+    }
+    code {
+      font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 14px;
+    }
+    p code, li code {
+      background: #f4f4f4;
+      padding: 2px 5px;
+      border-radius: 4px;
+      color: #d12026;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+    }
+    th, td {
+      text-align: left;
+      padding: 10px;
+      border-bottom: 1px solid #eaecf0;
+    }
+    th {
+      background: #f8f9fa;
     }
   </style>
   <script type="importmap">
@@ -136,9 +199,16 @@
 <body>
 
   <div class="content">
-    <h1>orbital-viewer-js</h1>
+    <div class="header">
+      <h1>orbital-viewer-js</h1>
+      <a href="https://github.com/RobBobbins/orbital-viewer-js" class="github-link" target="_blank">View on GitHub</a>
+    </div>
+    
     <p>
       A standalone, mathematically exact volumetric raymarcher for hydrogen atomic orbitals built on top of Three.js. 
+      Most orbital visualizations on the web rely on scatter plots or particle systems that loosely approximate probability density. 
+      This library uses a custom GLSL raymarching shader to analytically evaluate the real spherical harmonics and generalized Laguerre polynomials directly on the GPU. 
+      It accumulates the |&psi;|² probability density through the volume and applies ACES Filmic Tone Mapping to gracefully handle highlights.
     </p>
 
     <!-- Embedded Widget -->
@@ -154,35 +224,82 @@
         </div>
       </div>
       
-      <!-- Gallery placed UNDER the viewer, inside normal page flow -->
+      <!-- Gallery -->
       <div id="orbital-gallery"></div>
     </div>
     
-    <p>
-      The interactive widget above is powered entirely by the <code>OrbitalViewer</code> class. 
-      The gallery below is generated automatically by calling the static helper method 
-      <code>OrbitalViewer.generateThumbnail(n, l, m)</code>.
-    </p>
+    <h2>Installation</h2>
+<pre><code>npm install orbital-viewer-js three</code></pre>
+<p><em>Note: <code>three</code> is required as a peer dependency.</em></p>
+
+<h2>Quick Start</h2>
+<pre><code>import * as THREE from 'three';
+import OrbitalViewer from 'orbital-viewer-js';
+
+// Get a container element with a defined width and height
+const container = document.getElementById('my-viewer');
+
+// Initialize the viewer
+const viewer = new OrbitalViewer(container, {
+  n: 3,                 // Principal quantum number
+  l: 2,                 // Azimuthal quantum number
+  m: 0,                 // Magnetic quantum number
+  autoRotateSpeed: 1.5  // Optional: Rotation speed (0 to disable)
+});
+
+// Change the orbital dynamically
+viewer.setQuantumNumbers(4, 2, 0);
+
+// Adjust rendering properties dynamically
+viewer.setTuning({
+  brightness: 0.10,
+  shadowBoost: 0.45,
+  coreExposure: 0.60,
+  colorCurve: 0.70
+});</code></pre>
+
+<h2>Constructor Options</h2>
+<table>
+  <thead>
+    <tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>n</code></td><td><code>number</code></td><td><code>4</code></td><td>Principal quantum number. Controls energy/size.</td></tr>
+    <tr><td><code>l</code></td><td><code>number</code></td><td><code>2</code></td><td>Azimuthal quantum number (l &lt; n). Controls shape.</td></tr>
+    <tr><td><code>m</code></td><td><code>number</code></td><td><code>0</code></td><td>Magnetic quantum number (-l &le; m &le; l). Controls orientation.</td></tr>
+    <tr><td><code>brightness</code></td><td><code>number</code></td><td><code>0.10</code></td><td>Global multiplier before tone mapping.</td></tr>
+    <tr><td><code>shadowBoost</code></td><td><code>number</code></td><td><code>0.45</code></td><td>Fractional power curve applied to raw densities to recover faint outer shells.</td></tr>
+    <tr><td><code>coreExposure</code></td><td><code>number</code></td><td><code>0.60</code></td><td>Normalizes clipping on high-amplitude directional orbitals vs diffuse s-orbitals.</td></tr>
+    <tr><td><code>colorCurve</code></td><td><code>number</code></td><td><code>0.70</code></td><td>Power curve controlling the transition from purple to bright orange.</td></tr>
+    <tr><td><code>autoRotateSpeed</code></td><td><code>number</code></td><td><code>1.5</code></td><td>Speed of the orbital's automatic rotation.</td></tr>
+  </tbody>
+</table>
+
+<h2>Methods</h2>
+<ul>
+  <li><strong><code>setQuantumNumbers(n, l, m)</code></strong>: Loads a new orbital mathematically without recreating geometry. The engine will automatically sample the new orbital to normalize its true amplitude.</li>
+  <li><strong><code>setTuning(options)</code></strong>: Update rendering parameters (<code>brightness</code>, <code>shadowBoost</code>, <code>coreExposure</code>, <code>colorCurve</code>).</li>
+  <li><strong><code>dispose()</code></strong>: Cleans up the Three.js renderer and DOM nodes to prevent memory leaks in single-page applications.</li>
+  <li><strong><code>OrbitalViewer.generateThumbnail(n, l, m)</code></strong>: Static helper method that returns a dynamically drawn 2D <code>&lt;canvas&gt;</code> element representing the orbital slice (used to generate the gallery above).</li>
+</ul>
+
   </div>
 
   <script type="module">
-    import OrbitalViewer from '../src/OrbitalViewer.js?v=2';
+    import OrbitalViewer from '../src/OrbitalViewer.js?v=3';
 
     const container = document.getElementById('three-container');
     const titleEl = document.getElementById('three-title');
     const galleryEl = document.getElementById('orbital-gallery');
     
-    // Initialize the viewer with default (4, 2, 0)
     window.viewer = new OrbitalViewer(container, { n: 4, l: 2, m: 0 });
 
-    // Settings Toggle
     const btn = document.getElementById('settings-btn');
     const panel = document.getElementById('settings-panel');
     btn.addEventListener('click', () => {
       panel.style.display = panel.style.display === 'flex' ? 'none' : 'flex';
     });
 
-    // Sliders
     const bSlider = document.getElementById('b-slider');
     const sSlider = document.getElementById('s-slider');
     const eSlider = document.getElementById('e-slider');
@@ -200,7 +317,6 @@
     eSlider.addEventListener('input', updateTuning);
     cSlider.addEventListener('input', updateTuning);
 
-    // Gallery
     const orbitals = [
       {n:2, l:0, m:0}, {n:3, l:0, m:0}, {n:4, l:0, m:0},
       {n:2, l:1, m:0}, {n:3, l:1, m:0}, {n:4, l:1, m:0},
@@ -211,7 +327,7 @@
       {n:4, l:3, m:0}, {n:4, l:3, m:1}, {n:4, l:3, m:3}
     ];
 
-    let currentIdx = 10; // (4, 2, 0)
+    let currentIdx = 10; 
 
     orbitals.forEach((orb, idx) => {
       const thumbCanvas = OrbitalViewer.generateThumbnail(orb.n, orb.l, orb.m, 90);
@@ -241,7 +357,3 @@
 
 </body>
 </html>
-
-
-
-
